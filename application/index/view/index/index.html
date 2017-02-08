@@ -1,0 +1,28 @@
+{layout name="layout"}
+<div class="row">
+	<div class="col-xs-9">
+		{volist name="articleList" id="article"}
+			<div class="article">
+				<div class="articleTitle">
+					<p><a href="/index/index/article?articleid={$article.id}">{$article.title}</a></p>
+				</div>
+				<div class="summary">
+					<span>{$article.summary}</span>
+				</div>
+				<div class="articleStatus">
+					<p>posted @{$article.create_time} 阅读({$article.view_num}) 回复({$article.reply_num})</p>
+				</div>
+			</div>
+		{/volist}
+	</div>
+	<div class="col-xs-3">
+		<div class="announcement border">
+			<h3>博主公告</h3>
+			<ul>
+				<li>Name:ZST</li>
+				<li>Level:皆传</li>
+				<li>Favourite:Game and Storys</li>
+			</ul>
+		</div>
+	</div>
+</div>

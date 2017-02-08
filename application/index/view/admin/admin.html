@@ -1,0 +1,220 @@
+{layout name="layout"}
+<ul class="nav nav-tabs" id="myTab">
+	<li class="active"><a href="#articleList" data-toggle="tab">文章列表</a></li>
+	<li><a href="#setup" data-toggle="tab">个人设置</a></li>
+	<li><a href="#replyList" data-toggle="tab">回复列表</a></li>
+</ul>
+<div class="tab-content" id="myTabContent">
+	<div class="tab-pane fade in active" id="articleList">
+		<div class="articleList">
+			{volist name="articleList" id="article"}
+				<div class="article">
+					<div class="articleTitle">
+						<p><a href="/index/index/article?articleid={$article.id}">{$article.title}</a></p>
+					</div>
+					<div class="summary">
+						<span>{$article.summary}</span>
+					</div>
+					<div class="articleStatus">
+						<p>posted @{$article.create_time} 阅读({$article.view_num}) 回复({$article.reply_num}) <a href="/index/admin/editArticle?articleid={$article.id}">编辑</a> <a onclick = 'deleteArticle({$article.id})' style="color:black">删除</a></p>
+					</div>
+				</div>
+			{/volist}
+		</div>
+		<a class="btn btn-default" role="button" href="/index/admin/newArticle">发表文章</a>
+	</div>
+
+	<div class="tab-pane fade in" id="setup">
+		<div class="setupItem">
+			<div class="form-group">
+				<h4>自定义背景图片</h4>
+				<img src="/static/img/bg.png" alt="请选择背景图片" id="previewBG" width="200px" height="100px"><br>
+				<input type="file" accept="image/png,image/jpeg" id="uploadBG"/>
+				<button type="button" id="confirmBG" class="btn btn-default" style="margin-top: 5px;">确认</button>
+			</div>
+		</div>
+		<div class="setupItem">
+			<h4>个人资料设置</h4>
+			<div class="form-group">
+				<label>博主公告</label>
+				<input type="text" name="" class="form-control" id="announcement">
+			</div>
+			<button type="button" id="confirmPersonalDataSetup" class="btn btn-default">确认</button>
+		</div>
+		
+	</div>
+
+	<div class="tab-pane fade in" id="replyList">
+		<ul class="list-group">
+			{volist name="replyList" id="reply"}
+				<li class="list-group-item">
+					<p class="replyContent">{$reply.replyer}:{$reply.content}</p>
+					<p class="replyFrom"><a href="/index/index/article?articleid={$reply.article.id}">From:{$reply.article.title}</a></p>
+					<p class="replyTime">{$reply.create_time} <a onclick="deleteReply({$reply.id})" style="color:black">删除</a></p>
+				</li>
+			{/volist}
+		</ul>
+	</div>
+</div>
+<!-- Modal Code Begin-->
+<!--点击删除时提示的模态框-->
+<div class="modal fade" id="deleteDialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!--<div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" ></h4>
+            </div>-->
+            <div class="modal-body" id="myModalLabel" style="text-align: center">在这里添加一些文本</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="confirm">确认</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+<!--显示信息提交结果的模态框-->
+<div class="modal fade" id="message" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-body" id="message_modal_body">
+
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">关闭
+				</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal -->
+</div>
+<!-- Modal End-->
+<script>
+	//删除文章部分的代码
+	//保存点击删除时的对应文章的id
+	function deleteArticle(aid)
+	{
+		$("#myModalLabel").text("确认删除文章？");
+		$("#deleteDialog").modal('show');
+		$("#confirm").click(function()
+		{
+			$.ajax({
+				url:'/index/admin/deleteArticle',
+				type:'post',
+				data:{articleid:aid},
+				datatype:'json',
+				success:function(result)
+				{	
+					if(result.status == 'success')
+					{
+						$("#message").modal('show');
+						$("#message").on('hide.bs.modal',function(){location.reload(true)});
+						$("#message_modal_body").text("删除成功");
+					}
+					else{
+						$("#message").modal('show');
+						$("#message_modal_body").text("删除失败，请稍后再试");
+					}
+				},
+				error:function()
+				{
+					$("#message").modal('show');
+					$("#message_modal_body").text("因未知原因出现错误，请稍后再试");
+				}
+			});
+		})
+	};
+	//删除评论部分的代码
+	function deleteReply(rid)
+	{
+		$("#myModalLabel").text("确认删除该回复？");
+		$("#deleteDialog").modal('show');
+		$("#confirm").click(function(){
+			$.ajax({
+				url:'/index/admin/deleteReply',
+				type:'post',
+				data:{replyid:rid},
+				datatype:'json',
+				success:function(data)
+				{
+					if(data.status == 'success')
+					{
+						$("#message").modal('show');
+						$("#message").on('hide.bs.modal',function(){location.reload(true)});
+						$("#message_modal_body").text("删除成功");
+					}
+					else{
+						$("#message").modal('show');
+						$("#message_modal_body").text("删除失败，请稍后再试");
+					}
+				},
+				error:function()
+				{
+					$("#message").modal('show');
+					$("#message_modal_body").text("因未知原因出现错误，请稍后再试");
+				}
+			});
+		});
+	};
+	//处理背景图片上传和预览的代码
+	$("#uploadBG").change(function(){
+		var formdata = new FormData();
+		formdata.append('bgImage',$(this)[0].files[0]);
+		$.ajax({
+			url:'/index/admin/uploadBGImage',
+			type:'post',
+			processData:false,
+			contentType:false,
+			data:formdata,
+			dataType:'json',
+			cache:false,
+			success:function(data){
+				if(data.status == 'success')
+				{
+					$('#previewBG').attr('src','/static/img/' + data.imgurl + '?' + Math.random());
+					$('body').css('background','url(/static/img/' + data.imgurl + '?' + Math.random() + ') 0px 0px');
+				}
+				else{
+					$("#message").modal('show');
+					$("#message_modal_body").text(data.status);
+				}
+			},
+			error:function(){
+				alert('error');
+			},
+		});
+	});
+	//通知服务器确认更换壁纸
+	$("#confirmBG").click(function()
+	{
+		$.ajax({
+			url:'/index/admin/confirmChangeBG',
+			dataType:'json',
+			success:function(data){
+				$("#message").modal('show');
+				$("#message_modal_body").text(data.result);
+			},
+			error:function(){
+				$("#message").modal('show');
+				$("#message_modal_body").text('因未知原因设置失败，请稍后再试');
+			}
+		})
+	});
+	//保存个人资料
+	$("$confirmPersonalDataSetup").click(function(){
+		$.ajax({
+			url:'index/admin/confirmPersonalDataSetup',
+			type:'post',
+			data:{
+				announcement:$("#announcement").val()
+			}
+			dataType:'json',
+			success:function(data){
+
+			},
+			error:function(){
+
+			}
+		});
+	});
+</script>

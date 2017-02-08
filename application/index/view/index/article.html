@@ -1,0 +1,102 @@
+{layout name="layout"}
+<div class="row">
+	<div class="col-xs-9">
+		<div class="articleTitle">
+			<p><a href="/index/index/article?articleid={$article.id}">{$article.title}</a></p>
+		</div>
+		<div class="articleContent">
+			{$article.content}
+		</div>
+		<br>
+		<hr class="breakLine">
+		<br>
+		<div class="replyList">
+			<p class="replyListTitle">评论列表</p>
+			{volist name="replys" id="reply" }
+			<div class="replyItem">
+				<span class="replyOrder">#{$reply.replyorder}楼</span>
+				<span class="replyStatus">{$reply.create_time} {$reply.replyer}</span>
+				<hr>
+				<p>{$reply.content}</p>
+				<a href="#replyArea" class="replyToolbar" onclick="replyTo({$reply.replyorder})">回复</a>
+			</div>
+			{/volist}
+		</div>
+		<div class="replyArea" id="replyArea">
+			<p class="replyListTitle">发表评论</p>
+			<div class="form-group">
+				<label>昵称</label>
+				<input type="text" name="" id="replyer" class="form-control" required="required">
+			</div>
+			<div class="form-group">
+				<label>回复内容</label>
+				<textarea class="form-control" style="resize: none;" rows="5" id="replyContent" required="required"></textarea>
+			</div>
+			<button class="btn btn-default" id="submitReply">提交回复</button>
+		</div>
+	</div>
+	<div class="col-xs-3">
+		<div class="announcement border">
+			<h3>博主公告</h3>
+			<ul>
+				<li>Name:ZST</li>
+				<li>Level:皆传</li>
+				<li>Favourite:Game and Storys</li>
+			</ul>
+		</div>
+	</div>
+</div>
+
+<script>
+	function replyTo(value)
+	{
+		$("#replyContent").val("#回复第" + value + "楼");
+	}
+
+	$("#submitReply").click(function(){
+		var replyer = $("#replyer").val();
+		var replyContent = $("#replyContent").val();
+
+		$.ajax({
+			url:'/index/index/addReply',
+			type:'post',
+			dataType:'json',
+			data:{
+				replyer:replyer,
+				replyContent:replyContent,
+				articleid:{$article.id}
+			},
+			success:function(data)
+			{
+				if(data.status == 'success')
+				{
+					$("#message").modal('show');
+					$("#message").on('hide.bs.modal',function(){window.location.reload(true)});
+					$("#message_modal_body").text("回复发布成功");
+				}
+				else{
+					$("#message").modal('show');
+					$("#message_modal_body").text(data.status);
+				}
+			},
+			error:function(){
+				$("#message").modal('show');
+				$("#message_modal_body").text("因未知原因发生错误，请稍后再试");
+			}
+		})
+	})
+</script>
+<!--显示信息提交结果的模态框-->
+<div class="modal fade" id="message" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-body" id="message_modal_body">
+				
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">关闭
+				</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal -->
+</div>
